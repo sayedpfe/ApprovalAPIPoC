@@ -189,25 +189,39 @@ If you want to add optional claims to tokens:
 
 ### Backend Configuration
 
-Edit `backend/.env`:
-```env
-TENANT_ID=<your-directory-tenant-id>
-CLIENT_ID=<your-backend-client-id>
-CLIENT_SECRET=<your-backend-client-secret>
-PORT=3001
-FRONTEND_URL=http://localhost:3000
-```
+1. **Create the `.env` file** from the template:
+   ```powershell
+   cd backend
+   Copy-Item .env.example .env
+   ```
+
+2. **Edit `backend/.env`** and update with your Azure app registration values:
+   ```env
+   TENANT_ID=<your-directory-tenant-id>
+   CLIENT_ID=<your-backend-client-id>
+   CLIENT_SECRET=<your-backend-client-secret>
+   PORT=3001
+   FRONTEND_URL=http://localhost:3000
+   ```
 
 ### Frontend Configuration
 
-Edit `frontend/.env`:
-```env
-REACT_APP_CLIENT_ID=<your-frontend-client-id>
-REACT_APP_TENANT_ID=<your-directory-tenant-id>
-REACT_APP_REDIRECT_URI=http://localhost:3000
-REACT_APP_API_URL=http://localhost:3001/api
-REACT_APP_GRAPH_SCOPES=User.Read,ApprovalSolution.ReadWrite,ApprovalSolutionResponse.ReadWrite
-```
+1. **Create the `.env` file** from the template:
+   ```powershell
+   cd frontend
+   Copy-Item .env.example .env
+   ```
+
+2. **Edit `frontend/.env`** and update with your Azure app registration values:
+   ```env
+   REACT_APP_CLIENT_ID=<your-frontend-client-id>
+   REACT_APP_TENANT_ID=<your-directory-tenant-id>
+   REACT_APP_REDIRECT_URI=http://localhost:3000
+   REACT_APP_API_URL=http://localhost:3001/api
+   REACT_APP_GRAPH_SCOPES=User.Read,ApprovalSolution.ReadWrite,ApprovalSolutionResponse.ReadWrite
+   ```
+
+**Note**: The `.env` files are in `.gitignore` to protect your secrets from being committed to the repository.
 
 ---
 
