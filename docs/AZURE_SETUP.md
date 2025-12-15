@@ -139,14 +139,27 @@ From the Overview page, **copy and save**:
 2. Click **Yes** to confirm
 3. Verify all permissions show green checkmarks
 
-### Step 7: Configure Advanced Settings
+### Step 7: Configure Advanced Settings (Optional)
 
+**This step is OPTIONAL** - you can skip it for the basic PoC setup.
+
+#### Optional Claims (Not Required)
+If you want to add optional claims to tokens:
 1. In the left menu, click **Token configuration**
-2. Optionally add claims if needed (default is usually sufficient)
-3. In **Manifest**, verify:
-   ```json
-   "allowPublicClient": true
-   ```
+2. Click **+ Add optional claim**
+3. Select token type:
+   - **ID token** - Claims about the user returned during sign-in (e.g., email, preferred_username)
+   - **Access token** - Claims included when calling APIs (e.g., groups, roles)
+   - **SAML token** - Only if using SAML (not applicable for this PoC)
+4. For this PoC, default claims are sufficient - **no need to add any**
+
+#### Verify Manifest (Optional)
+1. In the left menu, click **Manifest**
+2. Find `"allowPublicClient"` and verify it's set to `true`
+3. This should already be correct for a SPA application
+4. Click **Save** only if you made changes
+
+**For this PoC, you can skip Step 7 entirely** - the default configuration works fine.
 
 ---
 
