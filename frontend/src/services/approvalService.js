@@ -85,7 +85,49 @@ class ApprovalService {
   }
 
   /**
-   * Respond to an approval (approve/reject)
+   * Respond to an approval request (approve/reject)
+   * This responds to a specific request within an approval item
+   * Uses PATCH method to update the request
+   */
+  async respondToApprovalRequest(approvalItemId, requestId, responseData, comments, msalInstance, accounts) {
+    try {
+      const headers = await getAuthHeaders(msalInstance, accounts);
+      const payload = { 
+        response: responseData,
+        comments: comments
+      };
+      
+      console.log('Responding to approval request with payload:', JSON.stringify(payload, null, 2));
+      console.log('Approval Item ID:', approvalItemId);
+      console.log('Request ID:', requestId);
+      console.log('URL:', `${GRAPH_BASE_URL}/approvalItems/${approvalItemId}/requests/${requestId}`);
+      
+      // Try PATCH method to update the request
+      const result = await axios.patch(
+        `${GRAPH_BASE_URL}/approvalItems/${approvalItemId}/requests/${requestId}`,
+        payload,
+        { headers }
+      );
+      
+      console.log('Response submitted successfully:', result.data);
+      return result.data;
+    } catch (error) {
+      console.error('Error responding to approval request:', error);
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', JSON.stringify(error.response.data, null, 2));
+        if (error.response.data.error) {
+          console.error('Error code:', error.response.data.error.code);
+          console.error('Error message:', error.response.data.error.message);
+        }
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Legacy method - Respond to an approval (approve/reject) via responses endpoint
+   * Note: This may not work for all approval types
    */
   async respondToApproval(id, responseData, comments, msalInstance, accounts) {
     try {
