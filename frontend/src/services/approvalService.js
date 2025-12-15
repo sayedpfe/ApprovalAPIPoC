@@ -67,10 +67,19 @@ class ApprovalService {
   async createApproval(approvalData, msalInstance, accounts) {
     try {
       const headers = await getAuthHeaders(msalInstance, accounts);
+      console.log('Creating approval with payload:', JSON.stringify(approvalData, null, 2));
       const response = await axios.post(`${GRAPH_BASE_URL}/approvalItems`, approvalData, { headers });
       return response.data;
     } catch (error) {
       console.error('Error creating approval:', error);
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', JSON.stringify(error.response.data, null, 2));
+        if (error.response.data.error) {
+          console.error('Error code:', error.response.data.error.code);
+          console.error('Error message:', error.response.data.error.message);
+        }
+      }
       throw error;
     }
   }
@@ -81,14 +90,29 @@ class ApprovalService {
   async respondToApproval(id, responseData, comments, msalInstance, accounts) {
     try {
       const headers = await getAuthHeaders(msalInstance, accounts);
+      const payload = { response: responseData, comments };
+      
+      console.log('Responding to approval with payload:', JSON.stringify(payload, null, 2));
+      console.log('URL:', `${GRAPH_BASE_URL}/approvalItems/${id}/responses`);
+      
       const result = await axios.post(
         `${GRAPH_BASE_URL}/approvalItems/${id}/responses`,
-        { response: responseData, comments },
+        payload,
         { headers }
       );
+      
+      console.log('Response submitted successfully:', result.data);
       return result.data;
     } catch (error) {
       console.error('Error responding to approval:', error);
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', JSON.stringify(error.response.data, null, 2));
+        if (error.response.data.error) {
+          console.error('Error code:', error.response.data.error.code);
+          console.error('Error message:', error.response.data.error.message);
+        }
+      }
       throw error;
     }
   }
@@ -103,6 +127,21 @@ class ApprovalService {
       return response.data;
     } catch (error) {
       console.error('Error canceling approval:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get approval requests for a specific approval item
+   */
+  async getApprovalRequests(id, msalInstance, accounts) {
+    try {
+      const headers = await getAuthHeaders(msalInstance, accounts);
+      const response = await axios.get(`${GRAPH_BASE_URL}/approvalItems/${id}/requests`, { headers });
+      console.log('Approval requests:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching approval requests:', error);
       throw error;
     }
   }
