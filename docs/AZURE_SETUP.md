@@ -2,11 +2,20 @@
 
 This guide provides detailed step-by-step instructions for setting up the Azure App Registrations required for this PoC.
 
+## ⚠️ Important: Approvals API Limitations
+
+**The Microsoft Graph Approvals API has the following constraints:**
+1. **BETA API Only**: The Approvals API is currently in BETA (`/beta` endpoint) and is not available in v1.0
+2. **Delegated Permissions Only**: Application permissions are NOT supported. All operations require a signed-in user
+3. **Permission Names**: The correct permissions are `ApprovalSolution.ReadWrite` and `ApprovalSolutionResponse.ReadWrite` (NOT `ApprovalItems.ReadWrite.All`)
+4. **Not Production Ready**: BETA APIs may change and are not recommended for production applications
+
 ## Prerequisites
 
 - Access to Azure Portal with permissions to create app registrations
 - A Microsoft 365 tenant or Azure Active Directory tenant
 - Global Administrator or Application Administrator role (for granting admin consent)
+- **Microsoft Teams Approvals app must be available in your tenant**
 
 ## Part 1: Backend App Registration (Confidential Client)
 
@@ -48,13 +57,15 @@ After registration, you'll see the Overview page. **Copy and save** these values
 
 ### Step 5: Configure API Permissions
 
+**IMPORTANT NOTE**: The Microsoft Graph Approvals API is currently in **BETA** and **does NOT support Application permissions**. For this PoC, we'll use **Delegated permissions** for the backend.
+
 1. In the left menu, click **API permissions**
 2. Click **+ Add a permission**
 3. Select **Microsoft Graph**
-4. Select **Application permissions**
+4. Select **Delegated permissions** (NOT Application permissions)
 5. Search for and add these permissions:
-   - `ApprovalItems.ReadWrite.All` - Read and write approval items
-   - `User.Read.All` - Read user profiles (to resolve user IDs)
+   - `ApprovalSolution.ReadWrite` - Read and write approval items
+   - `User.Read` - Read basic user profile
 6. Click **Add permissions**
 
 ### Step 6: Grant Admin Consent
@@ -118,7 +129,8 @@ From the Overview page, **copy and save**:
 4. Select **Microsoft Graph**
 5. Select **Delegated permissions**
 6. Search for and add:
-   - `ApprovalItems.ReadWrite.All` - Read and write approval items on behalf of user
+   - `ApprovalSolution.ReadWrite` - Read and write approval items on behalf of user
+   - `ApprovalSolutionResponse.ReadWrite` - Create responses to approvals
 7. Click **Add permissions**
 
 ### Step 6: Grant Admin Consent
@@ -144,17 +156,19 @@ From the Overview page, **copy and save**:
 - [ ] Application (client) ID copied
 - [ ] Directory (tenant) ID copied
 - [ ] Client secret value copied and stored securely
-- [ ] API permissions added: `ApprovalItems.ReadWrite.All`, `User.Read.All`
+- [ ] API permissions added: `ApprovalSolution.ReadWrite`, `User.Read` (Delegated)
 - [ ] Admin consent granted (green checkmarks)
-- [ ] Type: Confidential client
+- [ ] Type: Confidential client (but using delegated permissions)
+- [ ] **Note**: Approvals API is BETA and doesn't support Application permissions
 
 ### Frontend App Checklist
 - [ ] Application (client) ID copied
 - [ ] Directory (tenant) ID copied (same as backend)
 - [ ] Redirect URI configured: `http://localhost:3000`
 - [ ] Platform type: Single-page application (SPA)
-- [ ] API permissions added: `User.Read`, `ApprovalItems.ReadWrite.All`
+- [ ] API permissions added: `User.Read`, `ApprovalSolution.ReadWrite`, `ApprovalSolutionResponse.ReadWrite`
 - [ ] Admin consent granted (green checkmarks)
+- [ ] **Note**: Approvals API is currently in BETA
 
 ---
 
@@ -179,7 +193,7 @@ REACT_APP_CLIENT_ID=<your-frontend-client-id>
 REACT_APP_TENANT_ID=<your-directory-tenant-id>
 REACT_APP_REDIRECT_URI=http://localhost:3000
 REACT_APP_API_URL=http://localhost:3001/api
-REACT_APP_GRAPH_SCOPES=User.Read,ApprovalItems.ReadWrite.All
+REACT_APP_GRAPH_SCOPES=User.Read,ApprovalSolution.ReadWrite,ApprovalSolutionResponse.ReadWrite
 ```
 
 ---

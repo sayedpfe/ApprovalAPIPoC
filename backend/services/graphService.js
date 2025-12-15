@@ -19,11 +19,12 @@ class GraphService {
 
   /**
    * Get all approval items for the authenticated user
+   * NOTE: Approvals API is in BETA
    */
   async getApprovals() {
     try {
       const response = await this.client
-        .api('/solutions/approval/approvalItems')
+        .api('/beta/solutions/approval/approvalItems')
         .get();
       return response;
     } catch (error) {
@@ -38,7 +39,7 @@ class GraphService {
   async getApprovalById(approvalId) {
     try {
       const response = await this.client
-        .api(`/solutions/approval/approvalItems/${approvalId}`)
+        .api(`/beta/solutions/approval/approvalItems/${approvalId}`)
         .get();
       return response;
     } catch (error) {
@@ -53,7 +54,7 @@ class GraphService {
   async createApproval(approvalData) {
     try {
       const response = await this.client
-        .api('/solutions/approval/approvalItems')
+        .api('/beta/solutions/approval/approvalItems')
         .post(approvalData);
       return response;
     } catch (error) {
@@ -68,7 +69,7 @@ class GraphService {
   async respondToApproval(approvalId, response) {
     try {
       const result = await this.client
-        .api(`/solutions/approval/approvalItems/${approvalId}/responses`)
+        .api(`/beta/solutions/approval/approvalItems/${approvalId}/responses`)
         .post(response);
       return result;
     } catch (error) {
@@ -83,7 +84,7 @@ class GraphService {
   async cancelApproval(approvalId) {
     try {
       const result = await this.client
-        .api(`/solutions/approval/approvalItems/${approvalId}/cancel`)
+        .api(`/beta/solutions/approval/approvalItems/${approvalId}/cancel`)
         .post({});
       return result;
     } catch (error) {
@@ -98,7 +99,7 @@ class GraphService {
   async getApprovalResponses(approvalId) {
     try {
       const response = await this.client
-        .api(`/solutions/approval/approvalItems/${approvalId}/responses`)
+        .api(`/beta/solutions/approval/approvalItems/${approvalId}/responses`)
         .get();
       return response;
     } catch (error) {
