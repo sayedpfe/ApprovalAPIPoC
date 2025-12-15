@@ -1,13 +1,16 @@
 # Microsoft Graph Approvals API - Proof of Concept
 
-This project is a full-stack Proof of Concept (PoC) demonstrating integration with the **Microsoft Graph Approvals API**. It allows users to create, view, and respond to approval requests through a custom web application.
+This project is a simplified Proof of Concept (PoC) demonstrating integration with the **Microsoft Graph Approvals API**. It allows users to create, view, and respond to approval requests through a React web application.
 
 ## 🎯 Project Overview
 
 The PoC consists of:
 - **Frontend**: React application with MSAL authentication
-- **Backend**: Node.js/Express server that interfaces with Microsoft Graph API
+- **API Integration**: Direct calls to Microsoft Graph API using delegated permissions
 - **Authentication**: Microsoft Entra ID (Azure AD) using OAuth 2.0
+
+**Why No Backend?**
+The Microsoft Graph Approvals API only supports **delegated permissions** (user context), so the React app calls the API directly with the user's authentication token. This keeps the architecture simple and efficient.
 
 ## 📋 Prerequisites
 
@@ -21,45 +24,34 @@ Before you begin, ensure you have the following installed:
 
 ### Step 1: Azure App Registration
 
-You need to register two applications in Azure Active Directory:
+You need to register ONE application in Azure Active Directory:
 
-#### Backend App Registration (Confidential Client)
+#### App Registration (Single Page Application)
 1. Go to [Azure Portal](https://portal.azure.com)
 2. Navigate to **Azure Active Directory** > **App registrations** > **New registration**
 3. Configure:
-   - **Name**: `Approvals-API-Backend`
-   - **Supported account types**: Accounts in this organizational directory only
-   - **Redirect URI**: Leave blank for now
-4. After creation, note the following:
-   - **Application (client) ID**
-   - **Directory (tenant) ID**
-5. Go to **Certificates & secrets** > **New client secret**
-   - Create a secret and **copy its value immediately**
-6. Go to **API permissions**:
-   - Add **Microsoft Graph** > **Application permissions**:
-     - `ApprovalItems.ReadWrite.All`
-     - `User.Read.All`
-   - **Grant admin consent** for the permissions
-
-#### Frontend App Registration (Public Client)
-1. Create another app registration:
-   - **Name**: `Approvals-API-Frontend`
+   - **Name**: `Approvals-API-PoC`
    - **Supported account types**: Accounts in this organizational directory only
    - **Redirect URI**: 
      - Type: Single-page application (SPA)
      - URI: `http://localhost:3000`
-2. Note the **Application (client) ID**
-3. Go to **API permissions**:
+4. After creation, note the following:
+   - **Application (client) ID**
+   - **Directory (tenant) ID**
+5. Go to **API permissions**:
    - Add **Microsoft Graph** > **Delegated permissions**:
      - `User.Read`
-     - `ApprovalItems.ReadWrite.All`
-   - **Grant admin consent**
+     - `ApprovalSolution.ReadWrite`
+     - `ApprovalSolutionResponse.ReadWrite`
+   - Click **Grant admin consent** for your organization
 
-### Step 2: Configure Backend
+⚠️ **Important**: The Approvals API is in BETA and only supports **delegated permissions** (user context), not application permissions.
 
-1. Navigate to the backend folder:
+### Step 2: Configure Frontend
+
+1. Navigate to the frontend folder:
    ```powershell
-   cd backend
+   cd frontend
    ```
 
 2. Copy the example environment file:
@@ -69,11 +61,8 @@ You need to register two applications in Azure Active Directory:
 
 3. Edit `.env` and add your Azure App Registration details:
    ```
-   TENANT_ID=your-tenant-id-here
-   CLIENT_ID=your-backend-client-id-here
-   CLIENT_SECRET=your-client-secret-here
-   PORT=3001
-   FRONTEND_URL=http://localhost:3000
+   REACT_APP_CLIENT_ID=your-client-id-here
+   REACT_APP_TENANT_ID=your-tenant-id-here
    ```
 
 4. Install dependencies:
@@ -93,43 +82,19 @@ You need to register two applications in Azure Active Directory:
    Copy-Item .env.example .env
    ```
 
-3. Edit `.env` and add your frontend app details:
-   ```
-   REACT_APP_CLIENT_ID=your-frontend-client-id-here
-   REACT_APP_TENANT_ID=your-tenant-id-here
-   REACT_APP_REDIRECT_URI=http://localhost:3000
-   REACT_APP_API_URL=http://localhost:3001/api
-   REACT_APP_GRAPH_SCOPES=User.Read,ApprovalItems.ReadWrite.All
-   ```
-
-4. Install dependencies:
+3. Install dependencies (if not already done):
    ```powershell
    npm install
    ```
 
 ## ▶️ Running the Application
 
-You need to run both backend and frontend servers:
-
-### Start Backend Server
-
-```powershell
-cd backend
-npm start
-```
-
-The backend will run on `http://localhost:3001`
-
-### Start Frontend Application
-
-Open a new terminal window:
-
 ```powershell
 cd frontend
 npm start
 ```
 
-The frontend will open automatically at `http://localhost:3000`
+The application will open automatically at `http://localhost:3000`
 
 ## 🧪 Testing the PoC
 
@@ -142,13 +107,24 @@ The frontend will open automatically at `http://localhost:3000`
 
 ```
 ApprovalAPI/
-├── backend/
-│   ├── routes/
-│   │   └── approvals.js          # API routes for approvals
-│   ├── services/
-│   │   └── graphService.js       # Microsoft Graph API integration
-│   ├── server.js                 # Express server setup
-│   ├── package.json              # Backend dependencies
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── SignInSignOutButton.js    # Authentication UI
+│   │   │   ├── ApprovalsList.js          # List and respond to approvals
+│   │   │   └── CreateApproval.js         # Create new approvals
+│   │   ├── services/
+│   │   │   └── approvalService.js        # Microsoft Graph API calls
+│   │   ├── App.js                        # Main application component
+│   │   ├── authConfig.js                 # MSAL configuration
+│   │   └── index.js                      # Application entry point
+│   ├── package.json                      # Dependencies
+│   └── .env                              # Environment variables
+├── docs/
+│   ├── AZURE_SETUP.md                    # Detailed Azure setup guide
+│   └── API_REFERENCE.md                  # API documentation
+└── README.md                             # This file
+```
 │   └── .env.example              # Environment variables template
 │
 ├── frontend/
@@ -174,22 +150,39 @@ ApprovalAPI/
 ## 🔑 Key Features Demonstrated
 
 - ✅ Microsoft Entra ID authentication using MSAL
-- ✅ Fetching approval items from Microsoft Graph
+- ✅ Direct Microsoft Graph API integration with delegated permissions
+- ✅ Fetching approval items for the authenticated user
 - ✅ Creating new approval requests
 - ✅ Approving/rejecting approval requests
 - ✅ Viewing approval responses
-- ✅ Canceling approval requests
 
-## 📚 API Endpoints
+## 🏗️ Architecture
 
-### Backend API
+```
+┌─────────────────┐
+│   User Browser  │
+└────────┬────────┘
+         │ (1) Sign In
+         ▼
+┌─────────────────┐
+│   React App     │
+│   + MSAL Auth   │
+└────────┬────────┘
+         │ (2) Get Access Token
+         │ (3) API Calls with Token
+         ▼
+┌─────────────────┐
+│ Microsoft Graph │
+│  Approvals API  │
+│ (/beta/...)     │
+└─────────────────┘
+```
 
-- `GET /api/approvals` - Get all approval items
-- `GET /api/approvals/:id` - Get specific approval by ID
-- `POST /api/approvals` - Create a new approval
-- `POST /api/approvals/:id/respond` - Respond to an approval (approve/reject)
-- `POST /api/approvals/:id/cancel` - Cancel an approval
-- `GET /api/approvals/:id/responses` - Get responses for an approval
+**Flow:**
+1. User signs in via MSAL → Gets authenticated with Microsoft Entra ID
+2. MSAL acquires access token with delegated permissions
+3. React app calls Microsoft Graph API directly with the user's token
+4. API returns data based on user's permissions and context
 
 ## 🔧 Troubleshooting
 
@@ -199,13 +192,10 @@ ApprovalAPI/
 - **Solution**: Ensure your redirect URI in Azure matches exactly: `http://localhost:3000`
 
 **Issue**: "Insufficient privileges to complete the operation"
-- **Solution**: Make sure admin consent is granted for all API permissions
+- **Solution**: Make sure admin consent is granted for all API permissions in Azure portal
 
-**Issue**: Backend returns 500 errors
-- **Solution**: Verify your `.env` file has correct tenant ID, client ID, and client secret
-
-**Issue**: CORS errors
-- **Solution**: Ensure backend `FRONTEND_URL` matches your frontend URL exactly
+**Issue**: Seeing all approvals from different users
+- **Solution**: This is expected behavior - the API returns approvals where the user is an approver or owner
 
 ## 📖 Additional Resources
 

@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from 'react';
+import { useMsal } from '@azure/msal-react';
 import approvalService from '../services/approvalService';
 
 function ApprovalsList() {
+  const { instance, accounts } = useMsal();
   const [approvals, setApprovals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    loadApprovals();
-  }, []);
+    if (accounts.length > 0) {
+      loadApprovals();
+    }
+  }, [accounts]);
 
   const loadApprovals = async () => {
     try {
       setLoading(true);
-      const data = await approvalService.getApprovals();
+      const data = await approvalService.getApprovals(instance, accounts);
       setApprovals(data.value || []);
       setError(null);
     } catch (err) {
@@ -25,7 +29,7 @@ function ApprovalsList() {
 
   const handleRespond = async (id, response) => {
     try {
-      await approvalService.respondToApproval(id, response, 'Response from PoC');
+      await approvalService.respondToApproval(id, response, 'Response from PoC', instance, accounts);
       alert(`Successfully ${response} the approval`);
       loadApprovals();
     } catch (err) {

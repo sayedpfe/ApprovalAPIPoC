@@ -1,14 +1,45 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const GRAPH_BASE_URL = 'https://graph.microsoft.com/beta/solutions/approval';
+
+// Helper function to get auth token from MSAL
+const getAuthHeaders = async (msalInstance, accounts) => {
+  if (!accounts || accounts.length === 0) {
+    throw new Error('No accounts found. Please sign in.');
+  }
+
+  const request = {
+    scopes: ['ApprovalSolution.ReadWrite', 'ApprovalSolutionResponse.ReadWrite'],
+    account: accounts[0],
+  };
+
+  try {
+    const response = await msalInstance.acquireTokenSilent(request);
+    return {
+      'Authorization': `Bearer ${response.accessToken}`,
+      'Content-Type': 'application/json',
+    };
+  } catch (error) {
+    // If silent token acquisition fails, try interactive
+    const response = await msalInstance.acquireTokenPopup(request);
+    return {
+      'Authorization': `Bearer ${response.accessToken}`,
+      'Content-Type': 'application/json',
+    };
+  }
+};
 
 class ApprovalService {
   /**
-   * Get all approval items
+   * Get approval items for the current user
+   * The API returns approvals based on the authenticated user's permissions
    */
-  async getApprovals() {
+  async getApprovals(msalInstance, accounts) {
     try {
-      const response = await axios.get(`${API_URL}/approvals`);
+      const headers = await getAuthHeaders(msalInstance, accounts);
+      // The Approvals API with delegated permissions returns approvals
+      // where the authenticated user is either an approver or owner
+      const response = await axios.get(`${GRAPH_BASE_URL}/approvalItems`, { headers });
       return response.data;
     } catch (error) {
       console.error('Error fetching approvals:', error);
@@ -19,9 +50,10 @@ class ApprovalService {
   /**
    * Get a specific approval by ID
    */
-  async getApprovalById(id) {
+  async getApprovalById(id, msalInstance, accounts) {
     try {
-      const response = await axios.get(`${API_URL}/approvals/${id}`);
+      const headers = await getAuthHeaders(msalInstance, accounts);
+      const response = await axios.get(`${GRAPH_BASE_URL}/approvalItems/${id}`, { headers });
       return response.data;
     } catch (error) {
       console.error('Error fetching approval:', error);
@@ -32,9 +64,10 @@ class ApprovalService {
   /**
    * Create a new approval request
    */
-  async createApproval(approvalData) {
+  async createApproval(approvalData, msalInstance, accounts) {
     try {
-      const response = await axios.post(`${API_URL}/approvals`, approvalData);
+      const headers = await getAuthHeaders(msalInstance, accounts);
+      const response = await axios.post(`${GRAPH_BASE_URL}/approvalItems`, approvalData, { headers });
       return response.data;
     } catch (error) {
       console.error('Error creating approval:', error);
@@ -45,12 +78,14 @@ class ApprovalService {
   /**
    * Respond to an approval (approve/reject)
    */
-  async respondToApproval(id, response, comments) {
+  async respondToApproval(id, responseData, comments, msalInstance, accounts) {
     try {
-      const result = await axios.post(`${API_URL}/approvals/${id}/respond`, {
-        response,
-        comments
-      });
+      const headers = await getAuthHeaders(msalInstance, accounts);
+      const result = await axios.post(
+        `${GRAPH_BASE_URL}/approvalItems/${id}/responses`,
+        { response: responseData, comments },
+        { headers }
+      );
       return result.data;
     } catch (error) {
       console.error('Error responding to approval:', error);
@@ -61,9 +96,10 @@ class ApprovalService {
   /**
    * Cancel an approval request
    */
-  async cancelApproval(id) {
+  async cancelApproval(id, msalInstance, accounts) {
     try {
-      const response = await axios.post(`${API_URL}/approvals/${id}/cancel`);
+      const headers = await getAuthHeaders(msalInstance, accounts);
+      const response = await axios.post(`${GRAPH_BASE_URL}/approvalItems/${id}/cancel`, {}, { headers });
       return response.data;
     } catch (error) {
       console.error('Error canceling approval:', error);
@@ -74,9 +110,10 @@ class ApprovalService {
   /**
    * Get responses for a specific approval
    */
-  async getApprovalResponses(id) {
+  async getApprovalResponses(id, msalInstance, accounts) {
     try {
-      const response = await axios.get(`${API_URL}/approvals/${id}/responses`);
+      const headers = await getAuthHeaders(msalInstance, accounts);
+      const response = await axios.get(`${GRAPH_BASE_URL}/approvalItems/${id}/responses`, { headers });
       return response.data;
     } catch (error) {
       console.error('Error fetching approval responses:', error);

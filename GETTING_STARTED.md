@@ -2,39 +2,30 @@
 
 ## ✅ What's Been Created
 
-Your complete Proof of Concept workspace has been successfully set up with:
+Your simplified Proof of Concept has been successfully set up with:
 
 ### 📁 Project Structure
 ```
 ApprovalAPI/
-├── backend/                    # Node.js/Express backend
-│   ├── routes/
-│   │   └── approvals.js       # API routes
-│   ├── services/
-│   │   └── graphService.js    # Microsoft Graph integration
-│   ├── server.js              # Express server
-│   ├── package.json           # Dependencies
-│   └── .env.example           # Configuration template
-│
-├── frontend/                   # React frontend application
+├── frontend/                   # React application
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── SignInSignOutButton.js
 │   │   │   ├── ApprovalsList.js
 │   │   │   └── CreateApproval.js
 │   │   ├── services/
-│   │   │   └── approvalService.js
+│   │   │   └── approvalService.js  # Direct Graph API calls
 │   │   ├── App.js
-│   │   ├── authConfig.js     # MSAL configuration
+│   │   ├── authConfig.js           # MSAL configuration
 │   │   └── index.js
 │   ├── public/
 │   │   └── index.html
 │   ├── package.json
-│   └── .env.example          # Configuration template
+│   └── .env.example                # Configuration template
 │
 └── docs/
-    ├── API_REFERENCE.md      # Complete API documentation
-    └── AZURE_SETUP.md        # Step-by-step Azure setup
+    ├── API_REFERENCE.md            # Complete API documentation
+    └── AZURE_SETUP.md              # Step-by-step Azure setup
 ```
 
 ### 🚀 Features Implemented
@@ -42,14 +33,13 @@ ApprovalAPI/
 ✅ **Authentication**
    - Microsoft Entra ID (Azure AD) integration
    - MSAL for React (frontend)
-   - Client credentials flow (backend)
+   - Delegated permissions (user context)
 
 ✅ **Approval Management**
-   - List all approval requests
+   - List approval requests for authenticated user
    - Create new approval requests
    - Approve/reject requests
    - View approval responses
-   - Cancel approvals
 
 ✅ **User Interface**
    - Clean, modern React UI
@@ -58,34 +48,24 @@ ApprovalAPI/
    - Form for creating approvals
    - Responsive design
 
-✅ **Backend API**
-   - RESTful API endpoints
-   - Microsoft Graph SDK integration
-   - CORS configuration
-   - Error handling
+✅ **Direct API Integration**
+   - Calls Microsoft Graph API directly from frontend
+   - No backend needed - simplified architecture
+   - Uses user's authentication token
 
 ## 🎯 Next Steps
 
 ### 1. Complete Azure Setup (Required)
 
-Before running the application, you MUST set up Azure App Registrations:
+Before running the application, you MUST set up an Azure App Registration:
 
 📖 **Follow the guide**: [docs/AZURE_SETUP.md](docs/AZURE_SETUP.md)
 
 This will give you:
-- Backend Client ID
-- Backend Client Secret
-- Frontend Client ID
+- Client ID
 - Tenant ID
 
 ### 2. Configure Environment Variables
-
-**Backend** (`backend/.env`):
-```bash
-cd backend
-Copy-Item .env.example .env
-# Edit .env with your Azure credentials
-```
 
 **Frontend** (`frontend/.env`):
 ```bash
@@ -96,20 +76,12 @@ Copy-Item .env.example .env
 
 ### 3. Install Dependencies (Already Done! ✅)
 
-Dependencies have been installed for both projects:
-- Backend: 162 packages installed
+Dependencies have been installed:
 - Frontend: 1,316 packages installed
 
 ### 4. Run the Application
 
-**Start Backend** (Terminal 1):
-```powershell
-cd backend
-npm start
-```
-Backend runs on: http://localhost:3001
-
-**Start Frontend** (Terminal 2):
+**Start Frontend**:
 ```powershell
 cd frontend
 npm start
@@ -136,14 +108,13 @@ Frontend opens at: http://localhost:3000
 **Frontend:**
 - React 18
 - MSAL React (Microsoft Authentication Library)
-- Axios
+- Axios for HTTP calls to Microsoft Graph
 - React Scripts
 
-**Backend:**
-- Node.js
-- Express
-- Microsoft Graph Client
-- Azure Identity SDK
+**Integration:**
+- Microsoft Graph API (BETA)
+- Delegated Permissions (user context)
+- Direct API calls from browser
 
 ## ⚠️ Important Notes
 
@@ -157,26 +128,26 @@ Frontend opens at: http://localhost:3000
 ### Common Issues
 
 **Authentication Errors**
-- Verify Azure app registrations are correct
+- Verify Azure app registration is correct
 - Check that admin consent is granted
-- Ensure redirect URIs match exactly
+- Ensure redirect URI matches exactly: `http://localhost:3000`
 
 **API Errors**
-- Verify `.env` files are configured correctly
-- Check that backend is running on port 3001
-- Confirm Microsoft Graph permissions are granted
+- Verify `.env` file is configured correctly
+- Confirm Microsoft Graph permissions are granted (delegated permissions)
+- Check browser console for detailed error messages
 
-**CORS Errors**
-- Ensure `FRONTEND_URL` in backend `.env` matches frontend URL
-- Verify backend is running before starting frontend
+**Seeing All Approvals**
+- This is expected - the API returns approvals where the user is an approver or owner
+- Different users will see different approvals based on their roles
 
 ### Get Help
 
 If you encounter issues:
 1. Check the [README.md](README.md) troubleshooting section
 2. Review [docs/AZURE_SETUP.md](docs/AZURE_SETUP.md)
-3. Verify all environment variables are set correctly
-4. Check that both servers are running
+3. Verify environment variables in `frontend/.env` are set correctly
+4. Check browser console for error messages
 
 ## 🎓 Learning Resources
 
@@ -190,21 +161,20 @@ To move this PoC to production:
 
 1. **Security**
    - Use HTTPS everywhere
-   - Store secrets in Azure Key Vault
    - Implement proper error handling
    - Add input validation
+   - Consider rate limiting for API calls
 
-2. **Scalability**
-   - Deploy to Azure App Service
-   - Use Azure Static Web Apps for frontend
-   - Implement caching
-   - Add monitoring and logging
+2. **Deployment**
+   - Deploy to Azure Static Web Apps
+   - Update redirect URI to production URL
+   - Update Azure app registration with production domain
 
 3. **Best Practices**
    - Add unit and integration tests
    - Set up CI/CD pipelines
    - Implement proper logging
-   - Add health checks
+   - Add monitoring and analytics
 
 ---
 

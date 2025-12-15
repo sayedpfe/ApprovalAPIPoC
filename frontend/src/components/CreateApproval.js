@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useMsal } from '@azure/msal-react';
 import approvalService from '../services/approvalService';
 
 function CreateApproval() {
+  const { instance, accounts } = useMsal();
   const [formData, setFormData] = useState({
     displayName: '',
     description: '',
@@ -41,7 +43,7 @@ function CreateApproval() {
         }
       };
 
-      await approvalService.createApproval(approvalData);
+      await approvalService.createApproval(approvalData, instance, accounts);
       setMessage('Approval request created successfully!');
       setFormData({
         displayName: '',
