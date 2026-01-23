@@ -1,4 +1,5 @@
 const { CosmosClient } = require('@azure/cosmos');
+const { DefaultAzureCredential } = require('@azure/identity');
 
 class CosmosDBService {
   constructor() {
@@ -11,15 +12,25 @@ class CosmosDBService {
     try {
       const endpoint = process.env.COSMOS_ENDPOINT;
       const key = process.env.COSMOS_KEY;
+      const useAzureAD = process.env.USE_AZURE_AD_AUTH === 'true';
       const databaseId = process.env.COSMOS_DATABASE_ID || 'ApprovalsDB';
       const containerId = process.env.COSMOS_CONTAINER_ID || 'ApprovalMetadata';
 
-      if (!endpoint || !key) {
-        throw new Error('Cosmos DB endpoint and key must be configured in .env file');
+      if (!endpoint) {
+        throw new Error('Cosmos DB endpoint must be configured in .env file');
       }
 
       console.log('Initializing Cosmos DB client...');
-      this.client = new CosmosClient({ endpoint, key });
+      
+      // Use Azure AD (Managed Identity) or key-based authentication
+      if (useAzureAD || !key) {
+        console.log('Using Azure AD authentication (Managed Identity/DefaultAzureCredential)');
+        const credential = new DefaultAzureCredential();
+        this.client = new CosmosClient({ endpoint, aadCredentials: credential });
+      } else {
+        console.log('Using key-based authentication');
+        this.client = new CosmosClient({ endpoint, key });
+      }
 
       // Create database if it doesn't exist
       const { database } = await this.client.databases.createIfNotExists({
